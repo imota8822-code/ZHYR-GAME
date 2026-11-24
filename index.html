@@ -1,0 +1,120 @@
+TML
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ZHYR</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080b18;color:white;font-family:Arial;overflow:hidden}
+header{padding:12px;text-align:center;background:#11172b}
+h1{margin:0;color:#8eeaff;letter-spacing:8px}
+#info{text-align:center;padding:8px}
+canvas{display:block;width:100%;height:65vh;background:#10152d}
+.controls{display:flex;justify-content:space-around;padding:12px}
+button{background:#253b59;color:white;border:2px solid #70dfff;border-radius:15px;padding:17px;font-size:20px;touch-action:none}
+</style>
+</head>
+<body>
+<header><h1>ZHYR</h1>THE FORGOTTEN WORLDS</header>
+<div id="info">PLANETA NEXUS | VIDA: <span id="life">100</span></div>
+<canvas id="game"></canvas>
+<div class="controls">
+<button id="left">◀</button>
+<button id="jump">▲</button>
+<button id="right">▶</button>
+<button id="attack">⚔</button>
+</div>
+<script>
+const c=document.getElementById("game"),ctx=c.getContext("2d");
+c.width=960;c.height=540;
+let player={x:100,y:400,vx:0,vy:0,life:100,face:1};
+let enemy={x:550,y:440,life:3};
+let keys={},planet=0,attack=0;
+function button(id,key){
+let b=document.getElementById(id);
+b.onpointerdown=e=>{e.preventDefault();keys[key]=true};
+b.onpointerup=b.onpointerleave=()=>keys[key]=false;
+}
+button("left","left");button("right","right");
+button("jump","jump");button("attack","attack");
+onkeydown=e=>keys[e.key.toLowerCase()]=true;
+onkeyup=e=>keys[e.key.toLowerCase()]=false;
+function draw(){
+ctx.clearRect(0,0,960,540);
+let bg=ctx.createLinearGradient(0,0,0,540);
+bg.addColorStop(0,planet?"#21143d":"#09172f");
+bg.addColorStop(1,"#080916");
+ctx.fillStyle=bg;ctx.fillRect(0,0,960,540);
+for(let i=0;i<70;i++){
+ctx.fillStyle="#b8eaff";
+ctx.fillRect((i*137)%960,(i*79)%350,2,2);
+}
+ctx.fillStyle=planet?"#482b61":"#263e59";
+ctx.beginPath();ctx.arc(760,120,65,0,7);ctx.fill();
+ctx.fillStyle="#27334a";ctx.fillRect(0,470,960,70);
+ctx.fillStyle="#45647b";ctx.fillRect(0,465,960,8);
+ctx.fillStyle="#8b6cff";ctx.beginPath();
+ctx.ellipse(850,420,35,65,0,0,7);ctx.fill();
+ctx.strokeStyle="#b9f5ff";ctx.lineWidth=5;ctx.stroke();
+ctx.fillStyle="#fff";ctx.font="18px Arial";
+ctx.fillText("PORTAL",817,500);
+ctx.fillStyle="#ff496e";
+ctx.fillRect(enemy.x,430,35,35);
+ctx.fillStyle="#fff";ctx.fillRect(enemy.x+8,438,6,6);
+ctx.fillRect(enemy.x+23,438,6,6);
+ctx.save();ctx.translate(player.x,player.y);
+ctx.scale(player.face,1);
+ctx.fillStyle="#111";ctx.fillRect(-25,-12,15,30);
+ctx.fillRect(10,-12,15,30);
+ctx.fillStyle="#72dfff";
+ctx.beginPath();ctx.ellipse(0,0,30,25,0,0,7);ctx.fill();
+ctx.fillStyle="#baffff";
+ctx.beginPath();ctx.arc(12,-7,6,0,7);ctx.fill();
+ctx.fillStyle="#10152d";ctx.fillRect(14,-9,3,4);
+ctx.strokeStyle="#72dfff";ctx.lineWidth=5;
+ctx.beginPath();ctx.moveTo(-25,5);ctx.quadraticCurveTo(-55,0,-45,-25);ctx.stroke();
+ctx.restore();
+if(attack>0){
+ctx.strokeStyle="#fff";ctx.lineWidth=7;
+ctx.beginPath();ctx.arc(player.x+player.face*35,player.y,35,-1,1);ctx.stroke();
+attack--;
+}
+ctx.fillStyle="white";ctx.font="20px Arial";
+ctx.fillText(planet?"PLANETA VESPERA":"PLANETA NEXUS",25,35);
+ctx.fillText("Encontra o portal!",25,65);
+}
+function update(){
+player.vx=0;
+if(keys.left||keys.a){player.vx=-4;player.face=-1}
+if(keys.right||keys.d){player.vx=4;player.face=1}
+if((keys.jump||keys[" "])&&player.y>=440)player.vy=-13;
+player.vy+=0.6;
+player.x+=player.vx;player.y+=player.vy;
+if(player.y>440){player.y=440;player.vy=0}
+player.x=Math.max(25,Math.min(930,player.x));
+enemy.x+=Math.sin(Date.now()/500)*1.5;
+if(Math.abs(player.x-enemy.x)<40&&Math.abs(player.y-440)<40){
+if(!player.hit){player.life-=0.3;player.hit=true}
+}else player.hit=false;
+if(keys.attack&&attack===0){
+attack=15;
+if(Math.abs(player.x-enemy.x)<90)enemy.life--;
+keys.attack=false;
+if(enemy.life<=0){enemy.x=-1000}
+}
+if(player.x>810&&keys.jump){
+planet=1-planet;player.x=100;enemy.x=550;enemy.life=3;
+keys.jump=false;
+}
+document.getElementById("life").textContent=Math.max(0,Math.round(player.life));
+if(player.life<=0){player.x=100;player.y=440;player.life=100}
+draw();requestAnimationFrame(update);
+}
+update();
+</script>
+</body>
+</html>
+
